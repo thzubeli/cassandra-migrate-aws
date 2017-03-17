@@ -1,5 +1,6 @@
 'use strict';
 var migration_settings = require('../scripts/migrationSettings.json');
+const path = require('path')
 
 class Common {
   constructor(fs, db) {
@@ -46,10 +47,11 @@ class Common {
       for (let j = 0; j < files.length; j++) {
         //filter migration files using regex.
         if (this.reFileName.test(files[ j ])) {
-          filesAvail[ files[ j ].substr(0, 10) ] = files[ j ];
+          filesAvail[ files[ j ].substr(0, 10) ] = path.join(dir, files[ j ]);
         }
       }
       this.filesAvail = filesAvail;
+      console.log(filesAvail)
       resolve(filesAvail);
     });
   }

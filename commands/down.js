@@ -16,10 +16,12 @@ class down {
     return new Promise((resolve, reject) => {
       async.eachSeries(this.keyList, (id, callback) => {
         let fileName = this.pending[ id ];
-        let attributes = fileName.split("_");
+        let attributes = path.basename(fileName).split("_");
         let query = {
-          'file_name': fileName, 'migration_number': attributes[ 0 ], 'title': fileName.replace(".js", ""),
-          'run': require(path.resolve(process.cwd() + "/" + fileName))
+          'file_name': fileName,
+          'migration_number': attributes[ 0 ],
+          'title': path.basename(fileName, '.js'),
+          'run': require(path.resolve(fileName))
         };
         if (skip) {
           if (skip == query.migration_number) {

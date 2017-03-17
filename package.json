@@ -1,6 +1,6 @@
 {
-  "name": "cassandra-migrate",
-  "version": "1.2.2",
+  "name": "@knowbiz/cassandra-migrate",
+  "version": "1.2.2-1",
   "description": "Cassandra migration for node.",
   "main": "./app.js",
   "bin": {
@@ -37,5 +37,8 @@
   "devDependencies": {
   },
   "scripts": {
+    "create": "node app.js create 'test' -t ./migrations/template.tpl -m ./migrations",
+    "up": "node app.js up -m ./migrations -o ./migrations/options.js",
+    "down": "node app.js down -m ./migrations -o ./migrations/options.js"
   }
 }

@@ -43,6 +43,7 @@ program
   .option('-u, --username "<username>"', "database username")
   .option('-p, --password "<password>"', "database password")
   .option('-o, --optionFile "<pathToFile>"', "pass in a javascript option file for the cassandra driver, note that certain option file values can be overridden by provided flags")
+  .option('-m, --migrations "<pathToFolder>"', "pass in folder to use for migration files")
 ;
 
 program.name = 'cassandra-migrate';
@@ -53,7 +54,7 @@ program
   .option('-t, --template "<template>"', "sets the template for create")
   .action((title, options) => {
     let Create = require('./commands/create');
-    let create = new Create(fs, options.template);
+    let create = new Create(fs, options.template, options.parent.migrations);
     create.newMigration(title);
     process.exit(0);
   });
@@ -67,7 +68,7 @@ program
     let db = new DB(program);
     let common = new Common(fs, db);
     common.createMigrationTable()
-      .then(common.getMigrationFiles(process.cwd()))
+      .then(common.getMigrationFiles(options.parent.migrations || process.cwd()))
       .then(() => common.getMigrations())
       .then(() => common.getMigrationSet('up', options.num))
       .then((migrationLists) => {
@@ -102,7 +103,7 @@ program
     let db = new DB(program);
     let common = new Common(fs, db);
     common.createMigrationTable()
-      .then(common.getMigrationFiles(process.cwd()))
+      .then(common.getMigrationFiles(options.parent.migrations || process.cwd()))
       .then(() => common.getMigrations())
       .then(() => common.getMigrationSet('down', options.num))
       .then((migrationLists) => {
