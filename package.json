@@ -35,10 +35,12 @@
     "commander": "^2.8.1"
   },
   "devDependencies": {
+    "standard": "^10.0.0"
   },
   "scripts": {
     "create": "node app.js create 'test' -t ./migrations/template.tpl -m ./migrations",
     "up": "node app.js up -m ./migrations -o ./migrations/options.js",
-    "down": "node app.js down -m ./migrations -o ./migrations/options.js"
+    "down": "node app.js down -m ./migrations -o ./migrations/options.js",
+    "standard": "standard --fix"
   }
 }

@@ -13,8 +13,8 @@ var migration1456515707 = {
         prepare: true
       },
       function (err) {
-        handler(err, null);
-      });
+        handler(err, null)
+      })
   },
   down: function (db, handler) {
     db.execute(
@@ -24,9 +24,8 @@ var migration1456515707 = {
         prepare: true
       },
       function (err) {
-        handler(err, null);
-      });
+        handler(err, null)
+      })
   }
-};
-module.exports = migration1456515707;
-
+}
+module.exports = migration1456515707

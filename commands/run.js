@@ -1,10 +1,9 @@
-'use strict';
+'use strict'
 
 class Run {
-  cql(){
+  cql () {
 
   }
-  
 }
 
-modules.exports = Run;
+module.exports = Run
