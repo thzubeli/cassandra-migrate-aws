@@ -1,5 +1,5 @@
-var cassandra = require('cassandra-driver')
-var fs = require('fs')
+const cassandra = require('cassandra-driver')
+const fs = require('fs')
 module.exports = {
   contactPoints: ['127.0.0.1'],
   keyspace: 'default',

@@ -1,5 +1,5 @@
 
-var migration1489710992 = {
+const migration1489710992 = {
   up: function (db, handler) {
     return Promise.resolve()
       .then(() => {

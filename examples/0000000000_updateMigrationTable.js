@@ -1,6 +1,6 @@
-var async = require('async')
+const async = require('async')
 
-var migration0000000000 = {
+const migration0000000000 = {
   up: function (db, handler) {
     db.execute('SELECT * from sys_cassandra_migrations', null, { prepare: true }, (err, result) => {
       console.log('starting')

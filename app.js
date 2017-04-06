@@ -2,17 +2,17 @@
 /* jslint node: true */
 'use strict'
 
-var program = require('commander')
-var Common = require('./util/common')
-var fs = require('fs')
-var DB = require('./util/database')
+const program = require('commander')
+const Common = require('./util/common')
+const fs = require('fs')
+const DB = require('./util/database')
 const path = require('path')
 
 /**
  * Usage information.
  */
 
-var usage = [
+const usage = [
   '',
   '  example : ',
   '',
@@ -134,7 +134,7 @@ program
  .description('run cql directly')
  .option('-f, --files', 'run cql commands from file', true)
  .action(function(options){
- var Run = new require('../commands/run')(options);
+ const Run = new require('../commands/run')(options);
  Run.cql();
  process.exit(0);
  });

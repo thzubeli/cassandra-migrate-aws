@@ -13,8 +13,8 @@ class Create {
     this.dateString = Math.floor(Date.now() / 1000) + ''
     this.migrationsFolder = migrationsFolder || process.cwd()
 
-    var template = `
-var migration${this.dateString} = {
+    let template = `
+const migration${this.dateString} = {
   up: function (db, handler) {
     return Promise.resolve()
       .then(() => {
@@ -47,13 +47,13 @@ module.exports = migration${this.dateString}`
 
   newMigration (title) {
     /* eslint no-useless-escape: 0 */
-    var reTitle = /^[a-z0-9\_]*$/i
+    const reTitle = /^[a-z0-9\_]*$/i
     if (!reTitle.test(title)) {
       console.log("Invalid title. Only alphanumeric and '_' title is accepted.")
       process.exit(1)
     }
 
-    var fileName = `${this.dateString}_${title}.js`
+    const fileName = `${this.dateString}_${title}.js`
     this.fs.writeFileSync(`${this.migrationsFolder}/${fileName}`, this.template)
     console.log(`Created a new migration file with name ${fileName}`)
   }

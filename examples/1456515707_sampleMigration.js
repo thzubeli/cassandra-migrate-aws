@@ -1,4 +1,4 @@
-var migration1456515707 = {
+const migration1456515707 = {
   up: function (db, handler) {
     db.execute(
       `CREATE TABLE IF NOT EXISTS user_by_email_1 (

@@ -1,5 +1,5 @@
 'use strict'
-var migrationSettings = require('../scripts/migrationSettings.json')
+const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
 
 class Common {
@@ -25,7 +25,7 @@ class Common {
   getMigrations () {
     return new Promise((resolve, reject) => {
       this.filesRan = {}
-      var self = this
+      let self = this
       this.db.execute(migrationSettings.getMigration, null, { prepare: true }, function (err, alreadyRanFiles) {
         if (err) {
           reject(err)

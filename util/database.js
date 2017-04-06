@@ -1,6 +1,6 @@
 'use strict'
 
-var cassandra = require('cassandra-driver')
+const cassandra = require('cassandra-driver')
 
 class Database {
   constructor (settings) {
@@ -16,14 +16,14 @@ class Database {
     this.driverOptions.contactPoints = hosts || this.driverOptions.contactPoints || [ 'localhost' ]
     this.driverOptions.keyspace = settings.keyspace || process.env.DBKEYSPACE || this.driverOptions.keyspace
 
-    var username = settings.username || process.env.DBUSER
-    var password = settings.password || process.env.DBPASSWORD
+    const username = settings.username || process.env.DBUSER
+    const password = settings.password || process.env.DBPASSWORD
 
     if (username && password) {
       this.driverOptions.authProvider = new cassandra.auth.PlainTextAuthProvider(username, password)
     }
 
-    var client = new cassandra.Client(this.driverOptions)
+    let client = new cassandra.Client(this.driverOptions)
 
     // client.on('log', function (level, className, message, furtherInfo) {
     //  console.log('log event: %s -- %s', level, message);

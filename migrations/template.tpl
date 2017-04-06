@@ -1,5 +1,5 @@
 
-var migration${this.dateString} = {
+const migration${this.dateString} = {
   up: function (db, handler) {
     return Promise.resolve()
       .then(() => {

@@ -1,7 +1,7 @@
 'use strict'
-var async = require('async')
-var migrationSettings = require('../scripts/migrationSettings.json')
-var path = require('path')
+const async = require('async')
+const migrationSettings = require('../scripts/migrationSettings.json')
+const path = require('path')
 
 class down {
   constructor (db, pendingMigrations) {
