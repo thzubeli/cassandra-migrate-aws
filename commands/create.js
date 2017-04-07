@@ -7,14 +7,13 @@
  * @param path
  */
 
-class Create {
-  constructor (fs, templateFile, migrationsFolder) {
-    this.fs = fs
-    this.dateString = Math.floor(Date.now() / 1000) + ''
-    this.migrationsFolder = migrationsFolder || process.cwd()
+const create = (fsOverride, templateFile, folder) => {
+  const fs = fsOverride
+  const dateString = Math.floor(Date.now() / 1000) + ''
+  const migrationsFolder = folder || process.cwd()
 
-    let template = `
-const migration${this.dateString} = {
+  let template = `
+const migration${dateString} = {
   up: function (db, handler) {
     return Promise.resolve()
       .then(() => {
@@ -34,29 +33,29 @@ const migration${this.dateString} = {
   }
 }
 
-module.exports = migration${this.dateString}`
+module.exports = migration${dateString}`
 
-    if (templateFile) {
-      template = this.fs.readFileSync(templateFile)
-      /* eslint no-new-func: 0 */
-      let tpl = new Function('return `' + template + '`;')
-      template = tpl.call(this)
-    }
-    this.template = template
+  if (templateFile) {
+    template = fs.readFileSync(templateFile)
+    /* eslint no-new-func: 0 */
+    let tpl = new Function('dateString', 'return `' + template + '`;')
+    template = tpl(dateString)
   }
 
-  newMigration (title) {
-    /* eslint no-useless-escape: 0 */
-    const reTitle = /^[a-z0-9\_]*$/i
-    if (!reTitle.test(title)) {
-      console.log("Invalid title. Only alphanumeric and '_' title is accepted.")
-      process.exit(1)
-    }
+  return {
+    newMigration: (title) => {
+      /* eslint no-useless-escape: 0 */
+      const reTitle = /^[a-z0-9\_]*$/i
+      if (!reTitle.test(title)) {
+        console.log("Invalid title. Only alphanumeric and '_' title is accepted.")
+        process.exit(1)
+      }
 
-    const fileName = `${this.dateString}_${title}.js`
-    this.fs.writeFileSync(`${this.migrationsFolder}/${fileName}`, this.template)
-    console.log(`Created a new migration file with name ${fileName}`)
+      const fileName = `${dateString}_${title}.js`
+      fs.writeFileSync(`${migrationsFolder}/${fileName}`, template)
+      console.log(`Created a new migration file with name ${fileName}`)
+    }
   }
 }
 
-module.exports = Create
+module.exports = create

@@ -3,56 +3,55 @@ const async = require('async')
 const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
 
-class down {
-  constructor (db, pendingMigrations) {
-    this.db = db
-    this.pending = pendingMigrations
-    this.keyList = Object.keys(pendingMigrations).sort(function (a, b) {
-      return b - a
-    })
-  }
+const down = (dbOverride, pendingMigrations) => {
+  const db = dbOverride
+  const pending = pendingMigrations
+  const keyList = Object.keys(pendingMigrations).sort(function (a, b) {
+    return b - a
+  })
 
-  runPending (skip) {
-    return new Promise((resolve, reject) => {
-      async.eachSeries(this.keyList, (id, callback) => {
-        let fileName = this.pending[ id ]
-        let attributes = path.basename(fileName).split('_')
-        let query = {
-          'file_name': fileName,
-          'migration_number': attributes[ 0 ],
-          'title': path.basename(fileName, '.js'),
-          'run': require(path.resolve(fileName))
-        }
-        if (skip) {
-          if (skip === query.migration_number) {
-            console.log(`removing ${query.file_name} from migration table, skipping migration`)
-            this.updateMigrationTable(query)
+  return {
+    runPending (skip) {
+      return new Promise((resolve, reject) => {
+        async.eachSeries(keyList, (id, callback) => {
+          let fileName = pending[ id ]
+          let attributes = path.basename(fileName).split('_')
+          let query = {
+            'file_name': fileName,
+            'migration_number': attributes[ 0 ],
+            'title': path.basename(fileName, '.js'),
+            'run': require(path.resolve(fileName))
+          }
+          if (skip) {
+            if (skip === query.migration_number) {
+              console.log(`removing ${query.file_name} from migration table, skipping migration`)
+              updateMigrationTable(query)
+                .then((result) => callback(null, result))
+                .catch((error) => callback(error))
+            } else {
+              callback(null, '')
+            }
+          } else {
+            run(query)
+              .then((query) => updateMigrationTable(query))
               .then((result) => callback(null, result))
               .catch((error) => callback(error))
-          } else {
-            callback(null, '')
           }
-        } else {
-          this.run(query)
-            .then((query) => this.updateMigrationTable(query))
-            .then((result) => callback(null, result))
-            .catch((error) => callback(error))
-        }
-      }, (err) => {
-        if (err) {
-          /* eslint prefer-promise-reject-errors: 0 */
-          reject(`Error Rolling Back Migrations: ${err}`)
-        } else {
-          resolve('All Migrations Rolled Back Successfully')
-        }
+        }, (err) => {
+          if (err) {
+            /* eslint prefer-promise-reject-errors: 0 */
+            reject(`Error Rolling Back Migrations: ${err}`)
+          } else {
+            resolve('All Migrations Rolled Back Successfully')
+          }
+        })
       })
-    })
+    }
   }
 
-  run (query) {
+  function run (query) {
     return new Promise((resolve, reject) => {
       console.log(`Rolling back changes: ${query.title}`)
-      let db = this.db
       query.run.down(db, function (err) {
         if (err) {
           reject(err)
@@ -63,9 +62,8 @@ class down {
     })
   }
 
-  updateMigrationTable (query) {
+  function updateMigrationTable (query) {
     return new Promise((resolve, reject) => {
-      let db = this.db
       delete query.run
       delete query.migration_number
       delete query.title

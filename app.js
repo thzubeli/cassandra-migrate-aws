@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* jslint node: true */
 'use strict'
 
 const program = require('commander')
@@ -7,6 +6,7 @@ const Common = require('./util/common')
 const fs = require('fs')
 const DB = require('./util/database')
 const path = require('path')
+const keyspace = require('./util/keyspace')
 
 /**
  * Usage information.
@@ -54,7 +54,7 @@ program
   .option('-t, --template "<template>"', 'sets the template for create')
   .action((title, options) => {
     let Create = require('./commands/create')
-    let create = new Create(fs, options.template, options.parent.migrations)
+    let create = Create(fs, options.template, options.parent.migrations)
     create.newMigration(title)
     process.exit(0)
   })
@@ -64,16 +64,22 @@ program
   .description('run pending migrations')
   .option('-n, --num "<number>"', 'run migrations up to a specified migration number')
   .option('-s, --skip "<number>"', 'adds the specified migration to the migration table without actually running it', false)
+  .option('-c, --create', 'Create the keyspace if it doesn\'t exist.')
   .action((options) => {
-    let db = new DB(program)
-    let common = new Common(fs, db)
-    common.createMigrationTable()
-      .then(common.getMigrationFiles(options.parent.migrations || process.cwd()))
-      .then(() => common.getMigrations())
-      .then(() => common.getMigrationSet('up', options.num))
+    const db = DB(program)
+    const common = Common(fs, db)
+
+    // Parallelize Cassandra prep and scanning for migration files to save time.
+    Promise.all([
+      keyspace.checkKeyspace(program, options.create)
+        .then(() => common.createMigrationTable())
+        .then(() => common.getMigrations()),
+      common.getMigrationFiles(options.parent.migrations || process.cwd())
+    ])
+      .then(migrationInfo => common.getMigrationSet(migrationInfo, 'up', options.num))
       .then((migrationLists) => {
-        let Up = require('./commands/up')
-        let up = new Up(db, migrationLists)
+        const Up = require('./commands/up')
+        const up = Up(db, migrationLists)
         if (!options.skip) {
           console.log('processing migration lists')
           console.log(migrationLists)
@@ -99,16 +105,20 @@ program
   .option('-n, --num "<number>"', 'rollback migrations down to a specified migration number')
   .option('-s, --skip "<number>"', 'removes the specified migration from the migration table without actually running it', false)
   .action((options) => {
-    let db = new DB(program)
-    let common = new Common(fs, db)
-    common.createMigrationTable()
-      .then(common.getMigrationFiles(options.parent.migrations || process.cwd()))
-      .then(() => common.getMigrations())
-      .then(() => common.getMigrationSet('down', options.num))
+    const db = DB(program)
+    const common = Common(fs, db)
+
+    // Parallelize Cassandra prep and scanning for migration files to save time.
+    Promise.all([
+      common.createMigrationTable()
+        .then(() => common.getMigrations()),
+      common.getMigrationFiles(options.parent.migrations || process.cwd())
+    ])
+      .then(migrationInfo => common.getMigrationSet(migrationInfo, 'down', options.num))
       .then((migrationLists) => {
         console.log('processing migration lists')
-        let Down = require('./commands/down')
-        let down = new Down(db, migrationLists)
+        const Down = require('./commands/down')
+        const down = Down(db, migrationLists)
         if (!options.skip) {
           console.log('processing migration lists')
           console.log(migrationLists)
@@ -127,16 +137,5 @@ program
         process.exit(1)
       })
   })
-/*
- //@TODO: add this functionality  so that a cql client isn't directly required
- program
- .command('run')
- .description('run cql directly')
- .option('-f, --files', 'run cql commands from file', true)
- .action(function(options){
- const Run = new require('../commands/run')(options);
- Run.cql();
- process.exit(0);
- });
- */
+
 program.parse(process.argv)

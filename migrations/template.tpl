@@ -1,5 +1,5 @@
 
-const migration${this.dateString} = {
+const migration${dateString} = {
   up: function (db, handler) {
     return Promise.resolve()
       .then(() => {
@@ -19,4 +19,4 @@ const migration${this.dateString} = {
   }
 }
 
-module.exports = migration${this.dateString}
+module.exports = migration${dateString}
