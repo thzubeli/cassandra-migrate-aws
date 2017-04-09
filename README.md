@@ -2,6 +2,12 @@
 
 Cassandra-migrate is a incremental migration tool for Cassandra.
 
+## Version 1.3.0 update
+- Allow migrations folder to be specified using the `--migrations` command-line switch.
+- Refactored code to StandardJS.
+- Replaced classes with factory functions.
+- Allow keyspace to be created when using the `up` command with the `--create` command-line switch.
+
 ## Version 1.2.0 update
 Just added support for more robust Cassandra client configuration, now you can provide a path to a configuration file that can specify a Cassandra client option object directly as javascript.
 Cassandra client options configuration can found [here](http://docs.datastax.com/en/latest-nodejs-driver-api/global.html#ClientOptions). A user

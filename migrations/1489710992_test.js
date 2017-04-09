@@ -1,5 +1,5 @@
 
-var migration1489710992 = {
+const migration1489710992 = {
   up: function (db, handler) {
     return Promise.resolve()
       .then(() => {
@@ -16,7 +16,18 @@ var migration1489710992 = {
   },
 
   down: function (db, handler) {
-    handler(null, 'Done')
+    return Promise.resolve()
+      .then(() => {
+        console.log(1)
+        return db.execute('DROP TABLE IF EXISTS user;')
+      })
+      .then(() => {
+        handler(null, 'Done')
+      })
+      .catch(err => {
+        console.error(err)
+        handler(err)
+      })
   }
 }
 

@@ -1,17 +1,18 @@
 #!/usr/bin/env node
-/*jslint node: true */
-"use strict";
+'use strict'
 
-var program = require('commander');
-var Common = require('./util/common');
-var fs = require('fs');
-var DB = require('./util/database');
+const program = require('commander')
+const Common = require('./util/common')
+const fs = require('fs')
+const db = require('./util/database')
+const path = require('path')
+const keyspace = require('./util/keyspace')
 
 /**
  * Usage information.
  */
 
-var usage = [
+const usage = [
   '',
   '  example : ',
   '',
@@ -28,116 +29,113 @@ var usage = [
   '  cassandra-migrate create <migration_name>. (Creates a new cassandra migration)',
   '',
   '  cassandra-migrate create <migration_name> -t <template> (Creates a new cassandra migrate but uses a specified template instead of default).',
-  '',
+  ''
 
-].join('\n');
+].join('\n')
 
 program.on('--help', function () {
-  console.log(usage);
-});
+  console.log(usage)
+})
 
 program
-  .version(JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8')).version)
-  .option('-k, --keyspace "<keyspace>"', "The name of the keyspace to use.")
-  .option('-H, --hosts "<host,host>"', "Comma seperated host addresses. Default is [\"localhost\"].")
-  .option('-u, --username "<username>"', "database username")
-  .option('-p, --password "<password>"', "database password")
-  .option('-o, --optionFile "<pathToFile>"', "pass in a javascript option file for the cassandra driver, note that certain option file values can be overridden by provided flags")
-  .option('-m, --migrations "<pathToFolder>"', "pass in folder to use for migration files")
-;
+  .version(JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version)
+  .option('-k, --keyspace "<keyspace>"', 'The name of the keyspace to use.')
+  .option('-H, --hosts "<host,host>"', 'Comma seperated host addresses. Default is ["localhost"].')
+  .option('-u, --username "<username>"', 'database username')
+  .option('-p, --password "<password>"', 'database password')
+  .option('-o, --optionFile "<pathToFile>"', 'pass in a javascript option file for the cassandra driver, note that certain option file values can be overridden by provided flags')
+  .option('-m, --migrations "<pathToFolder>"', 'pass in folder to use for migration files')
 
-program.name = 'cassandra-migrate';
+program.name = 'cassandra-migrate'
 
 program
   .command('create <title>')
   .description('initialize a new migration file with title.')
-  .option('-t, --template "<template>"', "sets the template for create")
+  .option('-t, --template "<template>"', 'sets the template for create')
   .action((title, options) => {
-    let Create = require('./commands/create');
-    let create = new Create(fs, options.template, options.parent.migrations);
-    create.newMigration(title);
-    process.exit(0);
-  });
+    let Create = require('./commands/create')
+    let create = Create(options.template, options.parent.migrations)
+    create.newMigration(title)
+    process.exit(0)
+  })
 
 program
   .command('up')
   .description('run pending migrations')
   .option('-n, --num "<number>"', 'run migrations up to a specified migration number')
-  .option('-s, --skip "<number>"', "adds the specified migration to the migration table without actually running it", false)
+  .option('-s, --skip "<number>"', 'adds the specified migration to the migration table without actually running it', false)
+  .option('-c, --create', 'Create the keyspace if it doesn\'t exist.')
   .action((options) => {
-    let db = new DB(program);
-    let common = new Common(fs, db);
-    common.createMigrationTable()
-      .then(common.getMigrationFiles(options.parent.migrations || process.cwd()))
-      .then(() => common.getMigrations())
-      .then(() => common.getMigrationSet('up', options.num))
+    const dbConnection = db.getConnection(program)
+    const common = Common(dbConnection)
+
+    // Parallelize Cassandra prep and scanning for migration files to save time.
+    Promise.all([
+      keyspace.checkKeyspace(program, options.create)
+        .then(() => common.createMigrationTable())
+        .then(() => common.getMigrations()),
+      common.getMigrationFiles(options.parent.migrations || process.cwd())
+    ])
+      .then(migrationInfo => common.getMigrationSet(migrationInfo, 'up', options.num))
       .then((migrationLists) => {
-        let Up = require('./commands/up');
-        let up = new Up(db, migrationLists);
+        const Up = require('./commands/up')
+        const up = Up(dbConnection, migrationLists)
         if (!options.skip) {
-          console.log('processing migration lists');
-          console.log(migrationLists);
+          console.log('processing migration lists')
+          console.log(migrationLists)
         }
         up.runPending(options.skip)
           .then(result => {
-            console.log(result);
-            process.exit(0);
+            console.log(result)
+            process.exit(0)
           }, error => {
-            console.log(error);
-            process.exit(1);
-          });
+            console.log(error)
+            process.exit(1)
+          })
       })
       .catch(error => {
-        console.log(error);
-        process.exit(1);
-      });
-
-  });
+        console.log(error)
+        process.exit(1)
+      })
+  })
 
 program
   .command('down')
   .description('roll back already run migrations')
   .option('-n, --num "<number>"', 'rollback migrations down to a specified migration number')
-  .option('-s, --skip "<number>"', "removes the specified migration from the migration table without actually running it", false)
+  .option('-s, --skip "<number>"', 'removes the specified migration from the migration table without actually running it', false)
   .action((options) => {
-    let db = new DB(program);
-    let common = new Common(fs, db);
-    common.createMigrationTable()
-      .then(common.getMigrationFiles(options.parent.migrations || process.cwd()))
-      .then(() => common.getMigrations())
-      .then(() => common.getMigrationSet('down', options.num))
+    const dbConnection = db.getConnection(program)
+    const common = Common(dbConnection)
+
+    // Parallelize Cassandra prep and scanning for migration files to save time.
+    Promise.all([
+      common.createMigrationTable()
+        .then(() => common.getMigrations()),
+      common.getMigrationFiles(options.parent.migrations || process.cwd())
+    ])
+      .then(migrationInfo => common.getMigrationSet(migrationInfo, 'down', options.num))
       .then((migrationLists) => {
-        console.log('processing migration lists');
-        let Down = require('./commands/down');
-        let down = new Down(db, migrationLists);
+        console.log('processing migration lists')
+        const Down = require('./commands/down')
+        const down = Down(dbConnection, migrationLists)
         if (!options.skip) {
-          console.log('processing migration lists');
-          console.log(migrationLists);
+          console.log('processing migration lists')
+          console.log(migrationLists)
         }
         down.runPending(options.skip)
           .then(result => {
-            console.log(result);
-            process.exit(0);
+            console.log(result)
+            process.exit(0)
           }, error => {
-            console.log(error);
-            process.exit(1);
-          });
+            console.log(error)
+            process.exit(1)
+          })
       })
       .catch(error => {
-        console.log(error);
-        process.exit(1);
-      });
-  });
-/*
- //@TODO: add this functionality  so that a cql client isn't directly required
- program
- .command('run')
- .description('run cql directly')
- .option('-f, --files', 'run cql commands from file', true)
- .action(function(options){
- var Run = new require('../commands/run')(options);
- Run.cql();
- process.exit(0);
- });
- */
-program.parse(process.argv);
+        console.log(error)
+        process.exit(1)
+      })
+  })
+
+program.parse(process.argv)
