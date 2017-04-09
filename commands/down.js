@@ -3,8 +3,8 @@ const async = require('async')
 const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
 
-const down = (dbOverride, pendingMigrations) => {
-  const db = dbOverride
+const down = (dbConnection, pendingMigrations) => {
+  const db = dbConnection
   const pending = pendingMigrations
   const keyList = Object.keys(pendingMigrations).sort(function (a, b) {
     return b - a

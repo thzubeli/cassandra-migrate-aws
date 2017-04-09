@@ -2,9 +2,9 @@
 const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
 
-const common = (fsOverride, dbOverride) => {
-  const fs = fsOverride
-  const db = dbOverride
+const common = (dbConnection, fsOverride) => {
+  const db = dbConnection
+  const fs = fsOverride || require('fs')
 
   /* eslint no-useless-escape: 0 */
   const reFileName = /^[0-9]{10}_[a-z0-9\_]*.js$/i

@@ -7,10 +7,10 @@
  * @param path
  */
 
-const create = (fsOverride, templateFile, folder) => {
-  const fs = fsOverride
+const create = (templateFile, folder, fsOverride) => {
   const dateString = Math.floor(Date.now() / 1000) + ''
   const migrationsFolder = folder || process.cwd()
+  const fs = fsOverride || require('fs')
 
   let template = `
 const migration${dateString} = {

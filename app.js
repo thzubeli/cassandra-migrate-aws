@@ -4,7 +4,7 @@
 const program = require('commander')
 const Common = require('./util/common')
 const fs = require('fs')
-const DB = require('./util/database')
+const db = require('./util/database')
 const path = require('path')
 const keyspace = require('./util/keyspace')
 
@@ -54,7 +54,7 @@ program
   .option('-t, --template "<template>"', 'sets the template for create')
   .action((title, options) => {
     let Create = require('./commands/create')
-    let create = Create(fs, options.template, options.parent.migrations)
+    let create = Create(options.template, options.parent.migrations)
     create.newMigration(title)
     process.exit(0)
   })
@@ -66,8 +66,8 @@ program
   .option('-s, --skip "<number>"', 'adds the specified migration to the migration table without actually running it', false)
   .option('-c, --create', 'Create the keyspace if it doesn\'t exist.')
   .action((options) => {
-    const db = DB(program)
-    const common = Common(fs, db)
+    const dbConnection = db.getConnection(program)
+    const common = Common(dbConnection)
 
     // Parallelize Cassandra prep and scanning for migration files to save time.
     Promise.all([
@@ -79,7 +79,7 @@ program
       .then(migrationInfo => common.getMigrationSet(migrationInfo, 'up', options.num))
       .then((migrationLists) => {
         const Up = require('./commands/up')
-        const up = Up(db, migrationLists)
+        const up = Up(dbConnection, migrationLists)
         if (!options.skip) {
           console.log('processing migration lists')
           console.log(migrationLists)
@@ -105,8 +105,8 @@ program
   .option('-n, --num "<number>"', 'rollback migrations down to a specified migration number')
   .option('-s, --skip "<number>"', 'removes the specified migration from the migration table without actually running it', false)
   .action((options) => {
-    const db = DB(program)
-    const common = Common(fs, db)
+    const dbConnection = db.getConnection(program)
+    const common = Common(dbConnection)
 
     // Parallelize Cassandra prep and scanning for migration files to save time.
     Promise.all([
@@ -118,7 +118,7 @@ program
       .then((migrationLists) => {
         console.log('processing migration lists')
         const Down = require('./commands/down')
-        const down = Down(db, migrationLists)
+        const down = Down(dbConnection, migrationLists)
         if (!options.skip) {
           console.log('processing migration lists')
           console.log(migrationLists)
