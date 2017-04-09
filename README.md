@@ -3,8 +3,7 @@
 Cassandra-migrate is a incremental migration tool for Cassandra.
 
 ## Version 1.3.0 update
-- Allow migrations folder to be specified using the `--migrations` command-line.
-switch.
+- Allow migrations folder to be specified using the `--migrations` command-line switch.
 - Refactored code to StandardJS.
 - Replaced classes with factory functions.
 - Allow keyspace to be created when using the `up` command with the `--create` command-line switch.
