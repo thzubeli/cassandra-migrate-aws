@@ -33,25 +33,37 @@ const keyspace = () => {
             delete driverOptions.keyspace
           }
 
+          console.log(`Keyspace=${keyspace}`)
           let cassandraClient = new cassandra.Client(driverOptions)
 
-          return cassandraClient.connect()
-          .then(() => {
+          let p = Promise.reject()
+          for (let i = 0; i < 30; i++) {
+            p = p.catch(() => cassandraClient.connect()).catch(rejectDelay)
+          }
+          p = p.then(() => {
             // For now locking the replication for cassandra to just a single node
             const replicationStrategy = 'SimpleStrategy'
             const replicationFactor = 1
 
             const query = `CREATE KEYSPACE IF NOT EXISTS ${keyspace} WITH replication = {'class': '${replicationStrategy}', 'replication_factor': '${replicationFactor}' }`
             return cassandraClient.execute(query)
+            .then(() => {
+              cassandraClient.shutdown()
+            })
           })
-          .then(() => {
-            cassandraClient.shutdown()
-          })
+          return p
         })
       } else {
         return Promise.resolve()
       }
     }
+  }
+
+  function rejectDelay (reason) {
+    console.log('Cassandra connect fail')
+    return new Promise((resolve, reject) => {
+      setTimeout(reject.bind(null, reason), 2000)
+    })
   }
 }
 
