@@ -1,6 +1,6 @@
 {
   "name": "@knowbiz/cassandra-migrate",
-  "version": "1.5.0",
+  "version": "1.6.2",
   "description": "Cassandra migration for node.",
   "main": "./app.js",
   "bin": {
@@ -40,7 +40,8 @@
   "dependencies": {
     "async": "^0.9.0",
     "cassandra-driver": "^3.0.0",
-    "commander": "^2.8.1"
+    "commander": "^2.8.1",
+    "winston": "^2.3.1"
   },
   "devDependencies": {
     "standard": "^10.0.0"
