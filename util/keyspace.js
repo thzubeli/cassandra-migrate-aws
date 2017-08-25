@@ -37,7 +37,7 @@ const keyspace = () => {
           let cassandraClient = new cassandra.Client(driverOptions)
 
           let p = Promise.reject()
-          for (let i = 0; i < 30; i++) {
+          for (let i = 0; i < 100; i++) {
             p = p.catch(() => cassandraClient.connect()).catch(rejectDelay)
           }
           p = p.then(() => {
