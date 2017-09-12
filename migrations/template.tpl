@@ -1,21 +1,13 @@
 
 const migration${dateString} = {
   up: function (db, handler) {
-    return Promise.resolve()
-      .then(() => {
-        console.log(1)
-        return db.execute('')
-      })
-      .then(() => {
-        handler(null, 'Done')
-      })
-      .catch(err => {
-        console.error(err)
-        handler(err)
-      })
+    // Prefer to return a promise, handdler is deprecated and will be removed in a future version
+    // db is https://github.com/datastax/nodejs-driver
   },
 
   down: function (db, handler) {
+    // Prefer to return a promise, handdler is deprecated and will be removed in a future version
+    // db is https://github.com/datastax/nodejs-driver
   }
 }
 

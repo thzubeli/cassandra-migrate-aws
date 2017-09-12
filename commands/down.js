@@ -1,4 +1,6 @@
 'use strict'
+
+const logger = require('winston')
 const async = require('async')
 const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
@@ -50,31 +52,32 @@ const down = (dbConnection, pendingMigrations) => {
   }
 
   function run (query) {
-    return new Promise((resolve, reject) => {
-      console.log(`Rolling back changes: ${query.title}`)
-      query.run.down(db, function (err) {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(query)
-        }
-      })
+    console.log(`Rolling back changes: ${query.title}`)
+
+    return Promise.resolve()
+    .then(() => query.run.down(db, function (err) {
+      logger.warn('Callbacks are deprecated, return promise instead.  Callback will be removed in a future version')
+      if (err) {
+        throw err
+      }
+    }))
+    .then(() => query)
+    .catch(err => {
+      throw new Error(`Failed to run DOWN migration ${query.title}: ${err}`)
     })
   }
 
   function updateMigrationTable (query) {
-    return new Promise((resolve, reject) => {
-      delete query.run
-      delete query.migration_number
-      delete query.title
-      db.execute(migrationSettings.deleteMigration, query, { prepare: true }, function (err) {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(`Successfully Rolled Back ${query.title}`)
-        }
+    delete query.run
+    delete query.migration_number
+    delete query.title
+    return db.execute(migrationSettings.deleteMigration, query, { prepare: true })
+      .then(() => {
+        logger.debug(`Successfully Rolled Back ${query.title}`)
       })
-    })
+      .catch(err => {
+        throw new Error(`Failed to write migration to Migrations Table: ${query.title}: ${err}`)
+      })
   }
 }
 

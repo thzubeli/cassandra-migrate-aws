@@ -1,6 +1,6 @@
 {
   "name": "@knowbiz/cassandra-migrate",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Cassandra migration for node.",
   "main": "./app.js",
   "bin": {

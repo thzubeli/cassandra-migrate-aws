@@ -11,14 +11,7 @@ const common = (dbConnection, fsOverride) => {
 
   return {
     createMigrationTable: () => {
-      return new Promise((resolve, reject) => {
-        db.execute(migrationSettings.createMigrationTable, null, { prepare: true }, function (err, response) {
-          if (err) {
-            reject(err)
-          }
-          resolve(response)
-        })
-      })
+      return db.execute(migrationSettings.createMigrationTable, null, { prepare: true })
     },
 
     getMigrations: () => {

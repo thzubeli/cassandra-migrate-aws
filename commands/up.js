@@ -1,4 +1,5 @@
 'use strict'
+const logger = require('winston')
 const async = require('async')
 const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
@@ -51,32 +52,32 @@ const up = (dbConnection, pendingMigrations) => {
   }
 
   function run (query) {
-    return new Promise((resolve, reject) => {
-      console.log(`Migrating changes: ${query.title}`)
-      query.run.up(db, function (err) {
+    console.log(`Migrating changes: ${query.title}`)
+
+    return Promise.resolve()
+      .then(() => query.run.down(db, function (err) {
+        logger.warn('Callbacks are deprecated, return promise instead.  Callback will be removed in a future version')
         if (err) {
-          /* eslint prefer-promise-reject-errors: 0 */
-          reject(`Failed to run migration ${query.title}: ${err}`)
-        } else {
-          resolve(query)
+          throw err
         }
+      }))
+      .then(() => query)
+      .catch(err => {
+        throw new Error(`Failed to run UP migration ${query.title}: ${err}`)
       })
-    })
   }
 
   function updateMigrationTable (query) {
-    return new Promise((resolve, reject) => {
-      delete query.run
-      query.created_at = Date.now()
-      db.execute(migrationSettings.insertMigration, query, { prepare: true }, function (err) {
-        if (err) {
-          /* eslint prefer-promise-reject-errors: 0 */
-          reject(`Failed to write migration to Migrations Table: ${query.title}: ${err}`)
-        } else {
-          resolve(`Successfully Migrated ${query.title}`)
-        }
+    delete query.run
+    query.created_at = Date.now()
+
+    return db.execute(migrationSettings.insertMigration, query, { prepare: true })
+      .then(() => {
+        logger.debug(`Successfully Migrated ${query.title}`)
       })
-    })
+      .catch(err => {
+        throw new Error(`Failed to write migration to Migrations Table: ${query.title}: ${err}`)
+      })
   }
 }
 
