@@ -1,0 +1,53 @@
+{
+  "branches": [
+    "master",
+    {
+      "name": "develop",
+      "channel": "rc",
+      "prerelease": "rc"
+    },
+    {
+      "name": "init",
+      "channel": "beta",
+      "prerelease": "beta"
+    }
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    "@semantic-release/npm",
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          "commands/**",
+          "examples/**",
+          "migrations/**",
+          "scripts/**",
+          "util/**",
+          "package.json",
+          "CHANGELOG.md",
+          "README.md"
+        ]
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "LICENSE",
+          "README.md",
+          "package.json"
+        ],
+        "message": "chore(release): Release <%= nextRelease.version %> - <%= new Date().toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' }) %> [skip ci]\\n\\n<%= nextRelease.notes %>"
+      }
+    ]
+  ],
+  "preset": "conventionalcommits"
+}
