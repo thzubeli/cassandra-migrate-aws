@@ -1,6 +1,6 @@
 {
   "name": "cassandra-migrate-aws",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "AWS Keyspaces for Cassandra migration tool for node.",
   "main": "./app.js",
   "bin": {
