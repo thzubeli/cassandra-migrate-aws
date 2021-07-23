@@ -1,7 +1,6 @@
 {
-  "getKeyspace": "SELECT keyspace_name FROM system.schema_keyspaces WHERE keyspace_name=?;",
-  "getColumnFamily": "SELECT columnfamily_name FROM system.schema_columnfamilies WHERE keyspace_name=? and columnfamily_name = 'sys_cassandra_migrations';",
   "createMigrationTable": "CREATE TABLE IF NOT EXISTS sys_cassandra_migrations(file_name TEXT, created_at TIMESTAMP, migration_number TEXT, title TEXT, PRIMARY KEY (file_name));",
+  "createMigrationTableCheck": "SELECT keyspace_name, table_name, status FROM system_schema_mcs.tables WHERE keyspace_name = :keyspace_name AND table_name = 'sys_cassandra_migrations';",
   "getMigration": "SELECT * from sys_cassandra_migrations;",
   "insertMigration": "INSERT INTO sys_cassandra_migrations(file_name, created_at, migration_number, title) values(:file_name, :created_at, :migration_number, :title);",
   "deleteMigration": "DELETE FROM sys_cassandra_migrations where file_name=:file_name;"

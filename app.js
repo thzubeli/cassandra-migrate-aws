@@ -26,6 +26,8 @@ const usage = [
   '',
   '  cassandra-migrate <up/down> -k <keyspace> -s <migration_number> (skips a migration, either adds or removes the migration from the migration table)',
   '',
+  '  cassandra-migrate <up/down> -smtc (skips the check after asynchronous migration table creation on AWS, when you work locally with standard Cassandra for example)',
+  '',
   '  cassandra-migrate create <migration_name>. (Creates a new cassandra migration)',
   '',
   '  cassandra-migrate create <migration_name> -t <template> (Creates a new cassandra migrate but uses a specified template instead of default).',
@@ -46,7 +48,7 @@ program
   .option('-o, --optionFile "<pathToFile>"', 'pass in a javascript option file for the cassandra driver, note that certain option file values can be overridden by provided flags')
   .option('-m, --migrations "<pathToFolder>"', 'pass in folder to use for migration files')
 
-program.name = 'cassandra-migrate'
+program.name = 'cassandra-migrate-aws'
 
 program
   .command('create <title>')
@@ -65,6 +67,7 @@ program
   .option('-n, --num "<number>"', 'run migrations up to a specified migration number')
   .option('-s, --skip "<number>"', 'adds the specified migration to the migration table without actually running it', false)
   .option('-c, --create', 'Create the keyspace if it doesn\'t exist.')
+  .option('--skipMigrationTableCheck', 'skips the check after asynchronous migration table creation on AWS, when you work locally with plain Cassandra for example')
   .action((options) => {
     const dbConnection = db.getConnection(program)
     const common = Common(dbConnection)
@@ -72,7 +75,7 @@ program
     // Parallelize Cassandra prep and scanning for migration files to save time.
     Promise.all([
       keyspace.checkKeyspace(program, options.create)
-        .then(() => common.createMigrationTable())
+        .then(() => common.createMigrationTable(dbConnection.keyspace, options.skipMigrationTableCheck))
         .then(() => common.getMigrations()),
       common.getMigrationFiles(options.parent.migrations || process.cwd())
     ])
@@ -104,13 +107,14 @@ program
   .description('roll back already run migrations')
   .option('-n, --num "<number>"', 'rollback migrations down to a specified migration number')
   .option('-s, --skip "<number>"', 'removes the specified migration from the migration table without actually running it', false)
+  .option('-smtc, --skipMigrationTableCheck', 'skips the check after asynchronous migration table creation on AWS, when you work locally with plain Cassandra for example')
   .action((options) => {
     const dbConnection = db.getConnection(program)
     const common = Common(dbConnection)
 
     // Parallelize Cassandra prep and scanning for migration files to save time.
     Promise.all([
-      common.createMigrationTable()
+      common.createMigrationTable(dbConnection.keyspace, options.skipMigrationTableCheck)
         .then(() => common.getMigrations()),
       common.getMigrationFiles(options.parent.migrations || process.cwd())
     ])
