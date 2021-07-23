@@ -26,11 +26,6 @@
       "@semantic-release/github",
       {
         "assets": [
-          "commands/**",
-          "examples/**",
-          "migrations/**",
-          "scripts/**",
-          "util/**",
           "package.json",
           "CHANGELOG.md",
           "README.md"
