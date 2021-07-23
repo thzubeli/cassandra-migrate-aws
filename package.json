@@ -1,23 +1,26 @@
 {
-  "name": "@knowbiz/cassandra-migrate",
-  "version": "1.6.2",
-  "description": "Cassandra migration for node.",
+  "name": "cassandra-migrate-aws",
+  "version": "1.0.0-rc.1",
+  "description": "AWS Keyspaces for Cassandra migration tool for node.",
   "main": "./app.js",
   "bin": {
-    "cassandra-migrate": "./app.js"
+    "cassandra-migrate-aws": "./app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/knowbiz/cassandra-migrate.git"
+    "url": "git+https://github.com/thzubeli/cassandra-migrate-aws.git"
   },
   "keywords": [
+    "aws",
+    "keyspaces",
     "cassandra",
     "migrations",
-    "cql",
     "migration",
+    "tool",
+    "cql",
     "node"
   ],
-  "author": "Robin Leenders <leendersr@gmail.com>",
+  "author": "Thomas ZUBELI <thomas@zubeli.fr>",
   "license": "MIT",
   "contributors": [
     {
@@ -31,25 +34,36 @@
     {
       "name": "Daniel Slade",
       "email": "daniel.slade@noknow.nz"
+    },
+    {
+      "name": "Robin Leenders",
+      "email": "leendersr@gmail.com"
     }
   ],
   "bugs": {
-    "url": "https://github.com/knowbiz/cassandra-migrate/issues"
+    "url": "https://github.com/thzubeli/cassandra-migrate-aws/issues"
   },
-  "homepage": "https://github.com/knowbiz/cassandra-migrate#readme",
+  "homepage": "https://github.com/thzubeli/cassandra-migrate-aws#readme",
   "dependencies": {
     "async": "^0.9.0",
-    "cassandra-driver": "^3.0.0",
+    "cassandra-driver": "^4.6.3",
     "commander": "^2.8.1",
     "winston": "^2.3.1"
-  },
-  "devDependencies": {
-    "standard": "^10.0.0"
   },
   "scripts": {
     "create": "node app.js create 'test' -t ./migrations/template.tpl -m ./migrations",
     "up": "node app.js up -m ./migrations -o ./migrations/options.js --create",
     "down": "node app.js down -m ./migrations -o ./migrations/options.js",
-    "standard": "standard --fix"
+    "release": "semantic-release"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/github": "^7.2.3",
+    "@semantic-release/npm": "^7.1.3",
+    "@semantic-release/release-notes-generator": "^9.0.3",
+    "conventional-changelog-conventionalcommits": "^4.6.0",
+    "semantic-release": "^17.4.4"
   }
 }

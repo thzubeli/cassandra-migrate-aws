@@ -2,6 +2,21 @@
 const migrationSettings = require('../scripts/migrationSettings.json')
 const path = require('path')
 
+const createMigrationTableCheck = async (db, keyspaceName) => {
+  try {
+    console.log(`Checking migration table status for keyspace ${keyspaceName}`)
+    const response = await db.execute(migrationSettings.createMigrationTableCheck, {
+      'keyspace_name': keyspaceName
+    }, { prepare: true })
+    console.log(`Migration table status is: ${response?.rows?.[0]?.status}`)
+    return response?.rows?.[0]?.status === 'ACTIVE'
+  } catch(e) {
+    console.error('Error while checking migration table status')
+    console.error(e)
+    return false;
+  }
+}
+
 const common = (dbConnection, fsOverride) => {
   const db = dbConnection
   const fs = fsOverride || require('fs')
@@ -10,13 +25,32 @@ const common = (dbConnection, fsOverride) => {
   const reFileName = /^[0-9]{10}_[a-z0-9\_]*.js$/i
 
   return {
-    createMigrationTable: () => {
-      return new Promise((resolve, reject) => {
-        db.execute(migrationSettings.createMigrationTable, null, { prepare: true }, function (err, response) {
+    createMigrationTable: (keyspaceName, skipMigrationTableCheck) => {
+      return new Promise(async (resolve, reject) => {
+        // Setting prepared to false, as AWS Keyspaces doesn't handle prepared statements on DDL queries
+        db.execute(migrationSettings.createMigrationTable, null, { prepare: false }, async function (err, response) {
           if (err) {
             reject(err)
           }
-          resolve(response)
+          if (skipMigrationTableCheck) {
+            resolve(response)
+            return
+          }
+          let checkCount = 0;
+          let success = false;
+          do {
+            if (await createMigrationTableCheck(db, keyspaceName)) {
+              resolve(response)
+              success = true;
+              break;
+            }
+            checkCount++;
+            console.log('Waiting for 10 secondes before checking again')
+            await new Promise(res => setTimeout(res, 10000));
+          } while (checkCount <= 6)
+          if (!success) {
+            reject('Could not check if table was correctly created after waiting for 1 minute')
+          }
         })
       })
     },
