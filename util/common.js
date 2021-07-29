@@ -8,8 +8,12 @@ const createMigrationTableCheck = async (db, keyspaceName) => {
     const response = await db.execute(migrationSettings.createMigrationTableCheck, {
       'keyspace_name': keyspaceName
     }, { prepare: true })
-    console.log(`Migration table status is: ${response?.rows?.[0]?.status}`)
-    return response?.rows?.[0]?.status === 'ACTIVE'
+    console.log(
+      `Migration table status is: ${
+        response.rows[0] ? response.rows[0].status : null
+      }`
+    );
+    return response.rows[0] && response.rows[0].status === "ACTIVE";
   } catch(e) {
     console.error('Error while checking migration table status')
     console.error(e)
