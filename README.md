@@ -61,6 +61,11 @@ Skips a particular migration (either adds or removes the migration from the tabl
 cassandra-migrate-aws <up/down> -k <keyspace> -s <migration-number>
 ```
 
+Skips the check after asynchronous migration table creation on AWS, when you work locally with standard Cassandra for example
+```
+cassandra-migrate-aws <up/down> -k <keyspace> -s <migration-number> -skipMigrationTableCheck
+```
+
 Define host, username, and password. By default connects to [localhost] and default cassandra port [9042].
 
 ```

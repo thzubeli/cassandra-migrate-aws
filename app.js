@@ -16,21 +16,21 @@ const usage = [
   '',
   '  example : ',
   '',
-  '  cassandra-migrate <command> [options]',
+  '  cassandra-migrate-aws <command> [options]',
   '',
-  '  cassandra-migrate up -k <keyspace> (Runs All pending cassandra migrations)',
+  '  cassandra-migrate-aws up -k <keyspace> (Runs All pending cassandra migrations)',
   '',
-  '  cassandra-migrate down -k <keyspace> (Rolls back a single cassandra migration)',
+  '  cassandra-migrate-aws down -k <keyspace> (Rolls back a single cassandra migration)',
   '',
-  '  cassandra-migrate <up/down> -n <migration_number>. (Runs cassandra migrations UP or DOWN to a particular migration number).',
+  '  cassandra-migrate-aws <up/down> -n <migration_number>. (Runs cassandra migrations UP or DOWN to a particular migration number).',
   '',
-  '  cassandra-migrate <up/down> -k <keyspace> -s <migration_number> (skips a migration, either adds or removes the migration from the migration table)',
+  '  cassandra-migrate-aws <up/down> -k <keyspace> -s <migration_number> (skips a migration, either adds or removes the migration from the migration table)',
   '',
-  '  cassandra-migrate <up/down> -smtc (skips the check after asynchronous migration table creation on AWS, when you work locally with standard Cassandra for example)',
+  '  cassandra-migrate-aws <up/down> -skipMigrationTableCheck (skips the check after asynchronous migration table creation on AWS, when you work locally with standard Cassandra for example)',
   '',
-  '  cassandra-migrate create <migration_name>. (Creates a new cassandra migration)',
+  '  cassandra-migrate-aws create <migration_name>. (Creates a new cassandra migration)',
   '',
-  '  cassandra-migrate create <migration_name> -t <template> (Creates a new cassandra migrate but uses a specified template instead of default).',
+  '  cassandra-migrate-aws create <migration_name> -t <template> (Creates a new cassandra migrate but uses a specified template instead of default).',
   ''
 
 ].join('\n')
@@ -107,7 +107,7 @@ program
   .description('roll back already run migrations')
   .option('-n, --num "<number>"', 'rollback migrations down to a specified migration number')
   .option('-s, --skip "<number>"', 'removes the specified migration from the migration table without actually running it', false)
-  .option('-smtc, --skipMigrationTableCheck', 'skips the check after asynchronous migration table creation on AWS, when you work locally with plain Cassandra for example')
+  .option('--skipMigrationTableCheck', 'skips the check after asynchronous migration table creation on AWS, when you work locally with plain Cassandra for example')
   .action((options) => {
     const dbConnection = db.getConnection(program)
     const common = Common(dbConnection)
