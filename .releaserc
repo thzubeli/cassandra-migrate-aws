@@ -5,11 +5,6 @@
       "name": "develop",
       "channel": "rc",
       "prerelease": "rc"
-    },
-    {
-      "name": "init",
-      "channel": "beta",
-      "prerelease": "beta"
     }
   ],
   "plugins": [
